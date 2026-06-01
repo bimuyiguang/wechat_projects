@@ -1,0 +1,16 @@
+<view class="page">
+  <view class="title">我的生成</view>
+  <view class="sub">查看生成记录、状态和结果图</view>
+  <view class="grid">
+    <view class="asset" wx:for="{{tasks}}" wx:key="id" data-id="{{item.id}}" bindtap="openTask">
+      <image src="{{item.displayUrl}}" mode="aspectFill" />
+      <view class="asset-body">
+        <view class="asset-name">{{item.mode}}</view>
+        <view class="asset-meta">{{item.status}} · {{item.createdAt}}</view>
+      </view>
+    </view>
+  </view>
+  <view wx:if="{{!tasks.length}}" class="card" style="text-align:center;">
+    <view class="sub">暂无生成记录，去首页试试吧</view>
+  </view>
+</view>

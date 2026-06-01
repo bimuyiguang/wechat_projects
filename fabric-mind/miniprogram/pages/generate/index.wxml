@@ -1,0 +1,70 @@
+<view class="page generate-page">
+  <view class="home-hero">
+    <view class="hero-row">
+      <view class="hero-copy">
+        <view class="brand-mark">FabricMind</view>
+        <view class="title">试衣生成</view>
+        <view class="sub">人物图与服装图组合，生成自然穿搭效果</view>
+      </view>
+    </view>
+    <view class="hero-tools">
+      <button class="check-pill {{checkedIn ? 'checked' : ''}}" bindtap="checkIn">
+        <text>{{points}} 积分</text>
+        <text class="check-text">{{checkedIn ? "已签到" : "签到"}}</text>
+      </button>
+    </view>
+  </view>
+
+  <view class="card media-card">
+    <view class="card-head">
+      <view class="card-title">人物照片</view>
+      <view class="hint">{{personName}}</view>
+    </view>
+    <view class="preview person-preview">
+      <image src="{{personUrl}}" mode="aspectFit" />
+    </view>
+    <view class="actions">
+      <button class="soft-btn" bindtap="goAssets">素材库选择</button>
+      <button class="soft-btn" loading="{{uploadingPerson}}" bindtap="choosePerson">本地上传</button>
+    </view>
+  </view>
+
+  <view class="card media-card">
+    <view class="card-head">
+      <view class="card-title">服装素材</view>
+      <view class="hint">{{garmentName}}</view>
+    </view>
+    <view class="preview garment-preview">
+      <image src="{{garmentUrl}}" mode="aspectFit" />
+    </view>
+    <view class="actions">
+      <button class="soft-btn" bindtap="goAssets">素材库选择</button>
+      <button class="soft-btn" loading="{{uploadingGarment}}" bindtap="chooseGarment">上传衣服</button>
+    </view>
+  </view>
+
+  <view class="seg">
+    <view
+      wx:for="{{modes}}"
+      wx:key="*this"
+      class="seg-item {{item === mode ? 'seg-active' : ''}}"
+      data-mode="{{item}}"
+      bindtap="setMode"
+    >{{item}}</view>
+  </view>
+
+  <view class="card prompt-card">
+    <view class="card-head">
+      <view class="card-title">生成要求</view>
+      <view class="hint">可追加</view>
+    </view>
+    <textarea class="textarea" value="{{prompt}}" bindinput="onPrompt"></textarea>
+    <view class="chips">
+      <view class="chip" data-text="保留原背景" bindtap="appendPrompt">保留原背景</view>
+      <view class="chip" data-text="不改变脸" bindtap="appendPrompt">不改变脸</view>
+      <view class="chip" data-text="增强面料纹理" bindtap="appendPrompt">增强面料纹理</view>
+    </view>
+  </view>
+
+  <button class="primary generate-cta" bindtap="startGenerate">开始生成</button>
+</view>

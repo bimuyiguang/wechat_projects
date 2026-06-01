@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>FabricMind 管理控制台</title>
+  <link rel="stylesheet" href="/admin/styles.css" />
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="logo">FabricMind<span>AI 小程序 + 电商后台</span></div>
+    <nav id="nav"></nav>
+  </aside>
+  <main class="main">
+    <header class="topbar">
+      <div class="global-search">
+        <input id="globalSearch" placeholder="搜索用户、任务、素材、商品、订单" />
+        <select id="globalTypeFilter">
+          <option value="">全部类型</option>
+          <option value="user">用户</option>
+          <option value="asset">素材</option>
+          <option value="task">生成任务</option>
+          <option value="result">结果图</option>
+          <option value="video">视频任务</option>
+          <option value="shop">电商</option>
+        </select>
+      </div>
+      <button class="admin-user" id="logoutBtn">管理员 · 退出</button>
+    </header>
+    <section id="view"></section>
+  </main>
+  <script src="/admin/main.js"></script>
+</body>
+</html>

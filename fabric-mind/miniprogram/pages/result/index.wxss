@@ -1,0 +1,85 @@
+.result-page {
+  padding-top: calc(126rpx + env(safe-area-inset-top));
+}
+
+.result-header {
+  display: flex;
+  align-items: center;
+  gap: 22rpx;
+  margin: 0 0 28rpx;
+  min-height: 86rpx;
+}
+
+.back-icon {
+  width: 64rpx;
+  height: 64rpx;
+  min-width: 64rpx;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 1rpx solid #e2e0da;
+  color: #171717;
+  font-size: 44rpx;
+  font-weight: 600;
+  line-height: 58rpx;
+  text-align: center;
+  box-sizing: border-box;
+  box-shadow: 0 8rpx 18rpx rgba(0, 0, 0, .05);
+}
+
+.back-icon:active {
+  transform: scale(.96);
+  opacity: .72;
+}
+
+.result-heading {
+  min-width: 0;
+  flex: 1;
+}
+
+.result-heading .title {
+  font-size: 42rpx;
+  line-height: 1.12;
+}
+
+.result-heading .sub {
+  margin-top: 8rpx;
+  font-size: 23rpx;
+  line-height: 1.35;
+}
+
+.video-card {
+  padding-bottom: 28rpx;
+}
+
+.video-preview,
+.video-poster {
+  height: 420rpx;
+  margin-bottom: 16rpx;
+}
+
+.video-note {
+  color: #757575;
+  font-size: 24rpx;
+  line-height: 1.45;
+  margin: 0 0 18rpx;
+}
+
+.video-actions,
+.result-actions {
+  grid-template-columns: 1fr 1fr;
+  gap: 18rpx;
+}
+
+.video-actions .soft-btn,
+.result-actions .soft-btn,
+.result-actions .primary {
+  height: 82rpx;
+  line-height: 82rpx;
+  border-radius: 17rpx;
+  font-size: 26rpx;
+}
+
+.result-actions {
+  margin-top: 30rpx;
+  padding-bottom: 18rpx;
+}

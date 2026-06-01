@@ -1,0 +1,8 @@
+.env
+server/runtime-config.json
+public/generated/
+public/videos/
+public/uploads/
+node_modules/
+server/runtime-assets.json
+server/runtime-tasks.json

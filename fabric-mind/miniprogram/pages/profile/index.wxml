@@ -1,0 +1,75 @@
+<view class="page profile-page">
+  <view class="profile-card">
+    <view class="profile-main">
+      <view class="avatar">
+        <image wx:if="{{userInfo.avatarUrl}}" src="{{userInfo.avatarUrl}}" mode="aspectFill" />
+        <text wx:else>{{avatarText}}</text>
+      </view>
+      <view class="profile-copy">
+        <view class="profile-name">{{userInfo ? userInfo.nickName : "微信用户"}}</view>
+        <view wx:if="{{userInfo}}" class="profile-sub">昵称和头像已保存到本机</view>
+        <view wx:else class="profile-sub">登录后保存积分、历史记录和生成任务</view>
+      </view>
+    </view>
+
+    <view wx:if="{{!userInfo}}" class="login-panel">
+      <button class="primary login-btn" bindtap="login">微信授权登录</button>
+      <view class="login-note">仅用于展示昵称、头像和本机调试身份，后续可接入正式 openid。</view>
+    </view>
+
+    <view wx:if="{{editingName}}" class="nickname-editor">
+      <view class="nickname-title">{{nicknameEditTitle}}</view>
+      <view class="nickname-tip">{{nicknameEditTip}}</view>
+      <input
+        class="nickname-input"
+        type="nickname"
+        value="{{draftNickName}}"
+        placeholder="{{nicknamePlaceholder}}"
+        focus="{{nicknameFocus}}"
+        bindinput="onNicknameInput"
+      />
+      <view class="actions nickname-actions">
+        <button class="soft-btn" bindtap="cancelNickname">取消</button>
+        <button class="primary" bindtap="saveNickname">保存昵称</button>
+      </view>
+    </view>
+
+    <view wx:else class="profile-actions">
+      <button class="soft-btn" bindtap="editName">修改昵称</button>
+      <button class="soft-btn" open-type="chooseAvatar" bindchooseavatar="chooseAvatar">更换头像</button>
+      <button class="soft-btn" bindtap="checkIn">{{checkedIn ? "今日已签" : "签到 +5"}}</button>
+      <button class="ghost-btn" bindtap="logout">退出</button>
+    </view>
+  </view>
+
+  <view class="stats-grid" wx:if="{{userInfo}}">
+    <view class="stat-card">
+      <text>当前积分</text>
+      <strong>{{points}}</strong>
+    </view>
+    <view class="stat-card">
+      <text>总生成</text>
+      <strong>{{totalTasks}}</strong>
+    </view>
+    <view class="stat-card">
+      <text>成功任务</text>
+      <strong>{{successTasks}}</strong>
+    </view>
+  </view>
+
+  <view class="card" wx:if="{{userInfo}}">
+    <view class="card-title">积分规则</view>
+    <view class="sub">每日签到获得积分，生成消耗积分，失败任务自动返还。</view>
+  </view>
+
+  <view class="card">
+    <view class="card-title">功能入口</view>
+    <view class="entry-grid">
+      <view class="entry-item" wx:if="{{userInfo}}">我的积分</view>
+      <view class="entry-item" wx:if="{{userInfo}}">生成记录</view>
+      <view class="entry-item qr-entry" bindtap="goQrLogin">📱 网页扫码登录</view>
+      <view class="entry-item">意见反馈</view>
+      <view class="entry-item">关于 FabricMind</view>
+    </view>
+  </view>
+</view>

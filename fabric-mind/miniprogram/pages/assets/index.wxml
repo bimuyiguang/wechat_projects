@@ -1,0 +1,27 @@
+<view class="page">
+  <view class="top">
+    <view>
+      <view class="title">素材库</view>
+      <view class="sub">管理员上传的素材会同步到这里</view>
+    </view>
+  </view>
+
+  <view class="seg" style="margin-bottom: 20rpx;">
+    <view wx:for="{{tabs}}" wx:key="key" class="seg-item {{activeTab === item.key ? 'seg-active' : ''}}" data-tab="{{item.key}}" bindtap="switchTab">{{item.label}}</view>
+  </view>
+
+  <view wx:if="{{filteredAssets.length === 0}}" class="card">
+    <view class="card-title">暂无素材</view>
+    <view class="sub">请先在管理端上传上衣、下装或整套服装素材。</view>
+  </view>
+
+  <view class="grid">
+    <view class="asset" wx:for="{{filteredAssets}}" wx:key="id">
+      <image src="{{item.displayUrl}}" mode="aspectFit" bindtap="previewAsset" data-id="{{item.id}}" />
+      <view class="asset-body" bindtap="selectAsset" data-id="{{item.id}}">
+        <view class="asset-name">{{item.name}}</view>
+        <view class="asset-meta">{{item.type}} · {{item.color}} · {{item.style}}</view>
+      </view>
+    </view>
+  </view>
+</view>

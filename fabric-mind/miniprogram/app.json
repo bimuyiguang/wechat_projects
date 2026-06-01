@@ -1,0 +1,32 @@
+{
+  "pages": [
+    "pages/generate/index",
+    "pages/assets/index",
+    "pages/task/index",
+    "pages/result/index",
+    "pages/history/index",
+    "pages/profile/index",
+    "pages/auth/qr-login/index"
+  ],
+  "window": {
+    "navigationBarTitleText": "",
+    "navigationStyle": "custom",
+    "navigationBarBackgroundColor": "#f5f7fb",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#f5f7fb"
+  },
+  "tabBar": {
+    "color": "#7b8496",
+    "selectedColor": "#256bff",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "white",
+    "list": [
+      { "pagePath": "pages/generate/index", "text": "首页" },
+      { "pagePath": "pages/assets/index", "text": "素材" },
+      { "pagePath": "pages/history/index", "text": "历史" },
+      { "pagePath": "pages/profile/index", "text": "我的" }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

@@ -1,0 +1,383 @@
+page {
+  background: #f6f6f4;
+  color: #171717;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+}
+
+button {
+  min-width: 0;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.page {
+  padding: calc(132rpx + env(safe-area-inset-top)) 30rpx 158rpx;
+  box-sizing: border-box;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+.generate-page {
+  padding-top: calc(142rpx + env(safe-area-inset-top));
+}
+
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28rpx;
+}
+
+.home-hero {
+  margin: 0 -30rpx 30rpx;
+  padding: 0 30rpx 22rpx;
+  background: #f6f6f4;
+}
+
+.brand-mark {
+  width: fit-content;
+  margin-bottom: 12rpx;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #171717;
+  font-size: 28rpx;
+  line-height: 1.15;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.hero-row {
+  display: block;
+}
+
+.hero-copy {
+  max-width: 520rpx;
+}
+
+.hero-tools {
+  margin-top: 22rpx;
+  width: 240rpx;
+}
+
+.title {
+  font-size: 50rpx;
+  line-height: 1.08;
+  font-weight: 900;
+}
+
+.sub {
+  margin-top: 14rpx;
+  color: #757575;
+  font-size: 26rpx;
+}
+
+.pill,
+.check-pill {
+  width: 100%;
+  min-width: 0;
+  height: 68rpx;
+  padding: 0 18rpx;
+  border-radius: 18rpx;
+  color: #171717;
+  background: #ffffff;
+  border: 1rpx solid #dededb;
+  box-shadow: 0 8rpx 20rpx rgba(0, 0, 0, .04);
+  font-size: 23rpx;
+  font-weight: 800;
+  line-height: 1.15;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4rpx;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+.check-pill::after,
+.soft-btn::after,
+.primary::after {
+  border: 0;
+}
+
+.check-pill:active,
+.soft-btn:active,
+.primary:active,
+.seg-item:active,
+.chip:active,
+.asset:active {
+  transform: scale(.985);
+  opacity: .78;
+}
+
+.check-pill.checked {
+  color: #ffffff;
+  background: #171717;
+  border-color: #171717;
+}
+
+.check-text {
+  color: inherit;
+  font-size: 20rpx;
+  font-weight: 600;
+}
+
+.card {
+  background: #fff;
+  border: 1rpx solid #e6e4df;
+  border-radius: 22rpx;
+  padding: 26rpx;
+  margin-bottom: 30rpx;
+  box-shadow: 0 10rpx 24rpx rgba(0, 0, 0, .035);
+  box-sizing: border-box;
+  width: 100%;
+  overflow: hidden;
+}
+
+.media-card {
+  padding-bottom: 26rpx;
+}
+
+.card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 22rpx;
+}
+
+.card-title {
+  font-size: 32rpx;
+  font-weight: 900;
+}
+
+.hint {
+  color: #757575;
+  font-size: 24rpx;
+}
+
+.preview {
+  height: 430rpx;
+  border-radius: 18rpx;
+  overflow: hidden;
+  background: #fff;
+  border: 1rpx solid #ebe8e2;
+  margin-bottom: 22rpx;
+  box-sizing: border-box;
+}
+
+.person-preview {
+  height: 500rpx;
+  background: #fff;
+}
+
+.garment-preview {
+  height: 430rpx;
+  background: #fff;
+}
+
+.preview image {
+  width: 100%;
+  height: 100%;
+}
+
+.result-preview {
+  width: 100%;
+  max-height: none;
+  border-radius: 18rpx;
+  overflow: hidden;
+  background: #f3f2ef;
+  margin-bottom: 18rpx;
+}
+
+.result-preview image {
+  width: 100%;
+  display: block;
+}
+
+.video-preview,
+.video-poster {
+  width: 100%;
+  height: 360rpx;
+  border-radius: 18rpx;
+  overflow: hidden;
+  background: #111827;
+  margin-bottom: 18rpx;
+}
+
+.video-poster image {
+  width: 100%;
+  height: 100%;
+}
+
+.fit image {
+  object-fit: contain;
+  background: #f3f2ef;
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14rpx;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.media-card .actions {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16rpx;
+}
+
+.soft-btn {
+  width: 100%;
+  min-width: 0;
+  height: 74rpx;
+  border-radius: 16rpx;
+  background: #f4f3f0;
+  color: #171717;
+  border: 1rpx solid #e2e0da;
+  font-size: 26rpx;
+  font-weight: 800;
+  line-height: 74rpx;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.primary {
+  width: 100%;
+  min-width: 0;
+  height: 88rpx;
+  border-radius: 18rpx;
+  color: #fff;
+  background: #171717;
+  font-size: 30rpx;
+  font-weight: 900;
+  line-height: 88rpx;
+  letter-spacing: 0;
+  box-shadow: 0 16rpx 30rpx rgba(0, 0, 0, .12);
+  margin-left: 0;
+  margin-right: 0;
+  padding: 0;
+  box-sizing: border-box;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.generate-cta {
+  margin-top: 42rpx;
+}
+
+.seg {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10rpx;
+  padding: 8rpx;
+  background: #ebe9e4;
+  border-radius: 20rpx;
+  margin: 4rpx 0 30rpx;
+}
+
+.seg-item {
+  height: 68rpx;
+  line-height: 68rpx;
+  text-align: center;
+  border-radius: 15rpx;
+  color: #6f6f6f;
+  font-size: 22rpx;
+  font-weight: 800;
+}
+
+.seg-active {
+  color: #171717;
+  background: #fff;
+  box-shadow: 0 6rpx 16rpx rgba(0, 0, 0, .045);
+}
+
+.textarea {
+  min-height: 184rpx;
+  width: 100%;
+  padding: 22rpx;
+  box-sizing: border-box;
+  border-radius: 16rpx;
+  background: #fbfaf7;
+  border: 1rpx solid #e2e0da;
+  font-size: 26rpx;
+  line-height: 1.55;
+}
+
+.chips {
+  display: flex;
+  gap: 14rpx;
+  flex-wrap: wrap;
+  margin-top: 20rpx;
+}
+
+.chip {
+  padding: 13rpx 20rpx;
+  border-radius: 999rpx;
+  background: #f2f1ed;
+  color: #333333;
+  font-size: 22rpx;
+  font-weight: 800;
+}
+
+.prompt-card {
+  margin-bottom: 36rpx;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18rpx;
+  width: 100%;
+  min-width: 0;
+}
+
+.asset {
+  background: #fff;
+  border-radius: 26rpx;
+  overflow: hidden;
+  border: 1rpx solid #e7ebf2;
+  transition: transform .12s;
+}
+
+.asset:active {
+  transform: scale(0.97);
+  opacity: 0.85;
+}
+
+.asset image {
+  width: 100%;
+  height: 250rpx;
+  background: #f8fafc;
+}
+
+.asset-body {
+  padding: 18rpx;
+}
+
+.asset-name {
+  font-size: 26rpx;
+  font-weight: 900;
+}
+
+.asset-meta {
+  margin-top: 8rpx;
+  color: #7b8496;
+  font-size: 22rpx;
+}
+
+.select-hint {
+  margin-top: 8rpx;
+  color: #256bff;
+  font-size: 22rpx;
+  font-weight: 800;
+}

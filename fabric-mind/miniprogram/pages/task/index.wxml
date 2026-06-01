@@ -1,0 +1,17 @@
+<view class="page">
+  <view class="title">{{titleText}}</view>
+  <view class="sub">{{subtitleText}}</view>
+  <view class="card">
+    <view class="actions">
+      <view class="preview"><image src="{{personImageUrl}}" mode="aspectFill" /></view>
+      <view class="preview fit"><image src="{{secondImageUrl}}" mode="{{secondImageMode}}" /></view>
+    </view>
+    <view class="chips">
+      <view class="chip">已上传图片</view>
+      <view class="chip">{{imageStatusText}}</view>
+      <view class="chip">{{videoStatusText}}</view>
+    </view>
+    <view class="sub">视频生成完成后会回到结果页，同时展示图片和 MP4。</view>
+  </view>
+  <button class="soft-btn" bindtap="goHistory">稍后在历史记录查看</button>
+</view>
