@@ -1,0 +1,38 @@
+<view class="page result-page">
+  <view class="result-header">
+    <view class="back-icon" bindtap="goBack" aria-label="返回">‹</view>
+    <view class="result-heading">
+      <view class="title">生成结果</view>
+      <view class="sub">{{task.mode}} · {{task.createdAt}}</view>
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="result-preview" bindtap="previewResult">
+      <image src="{{resultImageUrl}}" mode="widthFix" />
+    </view>
+    <view class="card-title">生成要求</view>
+    <view class="sub">{{task.prompt}}</view>
+  </view>
+
+  <view class="card video-card">
+    <view class="card-head">
+      <view class="card-title">展示视频</view>
+      <view class="hint">{{videoHint}}</view>
+    </view>
+    <video wx:if="{{videoUrl}}" class="video-preview" src="{{videoUrl}}" poster="{{posterUrl}}" controls show-fullscreen-btn show-center-play-btn enable-progress-gesture></video>
+    <view wx:else class="video-poster" bindtap="previewVideoPoster">
+      <image src="{{posterUrl}}" mode="aspectFit" />
+    </view>
+    <view class="video-note">生成完成后可全屏播放，也可以保存到相册。</view>
+    <view class="actions video-actions">
+      <button class="soft-btn" bindtap="startVideo">生成展示视频</button>
+      <button class="soft-btn" bindtap="saveVideo">保存视频</button>
+    </view>
+  </view>
+
+  <view class="actions result-actions">
+    <button class="soft-btn" bindtap="saveImage">保存图片</button>
+    <button class="primary" bindtap="again">再生成一次</button>
+  </view>
+</view>

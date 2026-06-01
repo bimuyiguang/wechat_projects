@@ -1,0 +1,88 @@
+# System / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+id_rsa
+id_rsa.pub
+id_ed25519
+id_ed25519.pub
+
+# Dependency folders
+node_modules/
+**/node_modules/
+
+# Build outputs
+.next/
+**/.next/
+out/
+build/
+dist/
+target/
+**/target/
+*.tsbuildinfo
+next-env.d.ts
+
+# Runtime data. These are local JSON stores and may contain user/session/key data.
+fabric-mind/server/runtime-*.json
+fabric-mind/backups/
+fabric-mind/public/generated/
+fabric-mind/public/uploads/
+fabric-mind/public/videos/
+fabric-mind/public/tmp/
+fabric-mind/public/tmp-uploads/
+fabric-mind/public/debug-latest/
+
+# Duplicated ecommerce image source; Next serves assets from public/resources.
+dianshang/电商前端/resources/
+
+# Local browser automation profiles and screenshots
+.chrome*/
+**/.chrome*/
+/checkout-*.png
+/shop-*.png
+fabric-mind/tmp-*.png
+fabric-mind/tmp-*.html
+
+# Deployment archives / local handoff artifacts
+*.tar
+*.tar.gz
+*.zip
+*.7z
+fabric-mind-ssl.conf
+FabricMind_微信统一登录打通_交接文档.md
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# PaletteFusionNet local datasets / model weights
+paletteFusionNet/python-service/models/*.pt
+paletteFusionNet/python-service/fabric/
+paletteFusionNet/python-service/fengjing/
+paletteFusionNet/python-service/kuanshi/
+paletteFusionNet/python-service/kuanzhuang/
+paletteFusionNet/python-service/style/
+
+# Large static assets are managed outside Git (server/OSS/resource package).
+# Keeping them in Git made the initial Gitee push exceed a reliable pack size.
+dianshang/电商前端/public/resources/
+fabric-mind/public/samples/
+fabric-mind/public/home/
+fabric-mind/design-assets/
+paletteFusionNet/src-tauri/resources/

@@ -1,0 +1,68 @@
+<view class="container">
+  <!-- 成功状态 -->
+  <block wx:if="{{status === 'success'}}">
+    <view class="card success-card">
+      <view class="icon-wrap success-icon">
+        <text class="icon-text">✓</text>
+      </view>
+      <view class="title">登录成功！</view>
+      <view class="sub">网页端将在几秒内自动完成登录</view>
+      <view wx:if="{{userInfo}}" class="user-preview">
+        <image wx:if="{{userInfo.fullAvatarUrl || userInfo.avatarUrl}}" 
+               class="user-avatar" 
+               src="{{userInfo.fullAvatarUrl || userInfo.avatarUrl}}" 
+               mode="aspectFill"/>
+        <view class="user-name">{{userInfo.name || userInfo.nickName || '微信用户'}}</view>
+      </view>
+    </view>
+  </block>
+
+  <!-- 加载中 -->
+  <block wx:elif="{{status === 'loading'}}">
+    <view class="card loading-card">
+      <view class="spinner"></view>
+      <view class="title">正在确认登录</view>
+      <view class="sub">请稍候...</view>
+    </view>
+  </block>
+
+  <!-- 错误状态 -->
+  <block wx:elif="{{status === 'error'}}">
+    <view class="card error-card">
+      <view class="icon-wrap error-icon">
+        <text class="icon-text">✕</text>
+      </view>
+      <view class="title">登录失败</view>
+      <view class="sub">{{message}}</view>
+      <button class="btn btn-primary" bindtap="retry">重试</button>
+      <button class="btn btn-secondary" bindtap="goBack">返回首页</button>
+    </view>
+  </block>
+
+  <!-- 手动输入模式（扫码未带参数时的后备方案）-->
+  <block wx:elif="{{showManual}}">
+    <view class="card">
+      <view class="icon-wrap hint-icon">
+        <text class="icon-text">📱</text>
+      </view>
+      <view class="title">扫码登录</view>
+      <view class="sub">请输入网页上显示的登录码（或重新扫码）</view>
+      <input class="input"
+             placeholder="粘贴或输入登录码"
+             value="{{manualToken}}"
+             bindinput="onManualInput"
+             confirm-type="done"
+             bindconfirm="onManualConfirm"/>
+      <button class="btn btn-primary" bindtap="onManualConfirm">确认登录</button>
+      <button class="btn btn-secondary" bindtap="goBack">取消</button>
+    </view>
+  </block>
+
+  <!-- 初始待机 -->
+  <block wx:else>
+    <view class="card">
+      <view class="spinner"></view>
+      <view class="title">处理中</view>
+    </view>
+  </block>
+</view>
