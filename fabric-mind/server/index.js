@@ -10,6 +10,14 @@ const root = path.resolve(__dirname, "..");
 
 loadEnvFile(path.join(root, ".env"));
 
+const { createFabricMindDb } = await import("./db.js");
+const fabricMindDb = await createFabricMindDb();
+if (fabricMindDb.enabled) {
+  console.log("MySQL 持久化已启用");
+} else {
+  console.log(`MySQL 持久化未启用：${fabricMindDb.reason}`);
+}
+
 const port = Number(process.env.PORT || 5177);
 const runtimeConfigPath = path.join(__dirname, "runtime-config.json");
 const assetStorePath = path.join(__dirname, "runtime-assets.json");
@@ -99,6 +107,7 @@ function loadShopProductsStore() {
 function saveShopProductsStore() {
   try {
     fs.writeFileSync(shopProductsStorePath, JSON.stringify(shopProducts, null, 2), "utf8");
+    if (fabricMindDb.enabled) fabricMindDb.saveShopProducts(shopProducts);
   } catch (e) {
     console.error("保存商品配置失败:", e.message);
   }
@@ -117,6 +126,7 @@ function loadShopOrdersStore() {
 function saveShopOrdersStore() {
   try {
     fs.writeFileSync(shopOrdersStorePath, JSON.stringify(shopOrders, null, 2), "utf8");
+    if (fabricMindDb.enabled) fabricMindDb.saveShopOrders(shopOrders);
   } catch (e) {
     console.error("保存订单数据失败:", e.message);
   }
@@ -135,6 +145,7 @@ function loadShopReviewsStore() {
 function saveShopReviewsStore() {
   try {
     fs.writeFileSync(shopReviewsStorePath, JSON.stringify(shopReviews, null, 2), "utf8");
+    if (fabricMindDb.enabled) fabricMindDb.saveShopReviews(shopReviews);
   } catch (e) {
     console.error("保存评价数据失败:", e.message);
   }
@@ -159,6 +170,7 @@ function loadUserSessions() {
 function saveUserSessions() {
   try {
     fs.writeFileSync(sessionStorePath, JSON.stringify(userSessions, null, 2), "utf8");
+    if (fabricMindDb.enabled) fabricMindDb.saveUserSessions(userSessions);
   } catch (e) {
     console.error("保存会话数据失败:", e.message);
   }
@@ -227,9 +239,9 @@ const tasks = [
     status: "success",
     progress: 100,
     points: 8,
-    personUrl: "/public/home/person-default.png",
-    garmentUrl: "/public/home/garment-default.png",
-    resultUrl: "/public/home/person-default.png",
+    personUrl: "",
+    garmentUrl: "",
+    resultUrl: "",
     prompt: "保持脸部和背景不变，让服装自然贴合身体",
     createdAt: "2026-05-14 20:30"
   }
@@ -244,7 +256,7 @@ const videoTasks = [
     progress: 100,
     title: "结果图展示视频",
     style: "runway-pan",
-    posterUrl: "/public/home/person-default.png",
+    posterUrl: "",
     videoUrl: "",
     previewType: "animated-image",
     createdAt: "2026-05-14 20:40",
@@ -273,6 +285,7 @@ function saveTaskStore() {
     const tmpPath = `${taskStorePath}.tmp`;
     fs.writeFileSync(tmpPath, JSON.stringify(payload, null, 2), "utf8");
     fs.renameSync(tmpPath, taskStorePath);
+    if (fabricMindDb.enabled) fabricMindDb.saveTasks(tasks, videoTasks);
   } catch (error) {
     console.warn(`任务记录保存失败：${error.message}`);
   }
@@ -360,6 +373,26 @@ const defaultRuntimeConfig = {
 };
 
 let runtimeConfig = loadRuntimeConfig();
+
+async function hydrateRuntimeFromMysql() {
+  if (!fabricMindDb.enabled) return;
+  const data = await fabricMindDb.loadAll();
+  if (data.runtimeConfig) runtimeConfig = mergeConfig(defaultRuntimeConfig, data.runtimeConfig);
+  if (data.assets?.length) assets.splice(0, assets.length, ...data.assets);
+  if (data.users?.length) users.splice(0, users.length, ...data.users);
+  if (data.userSessions?.length) userSessions = data.userSessions;
+  if (data.shopProducts) {
+    shopProducts.styles = data.shopProducts.styles || [];
+    shopProducts.fabrics = data.shopProducts.fabrics || [];
+  }
+  if (data.shopOrders?.length) shopOrders.splice(0, shopOrders.length, ...data.shopOrders);
+  if (data.shopReviews?.length) shopReviews.splice(0, shopReviews.length, ...data.shopReviews);
+  if (data.tasks?.length) tasks.splice(0, tasks.length, ...data.tasks);
+  if (data.videoTasks?.length) videoTasks.splice(0, videoTasks.length, ...data.videoTasks);
+  console.log("MySQL 数据已加载到 FabricMind 运行缓存");
+}
+
+await hydrateRuntimeFromMysql();
 
 const dashscopeCreateEndpoints = {
   beijing: "https://dashscope.aliyuncs.com/api/v1/services/aigc/image2image/image-synthesis/",
@@ -631,6 +664,7 @@ function loadRuntimeConfig() {
 
 function saveRuntimeConfig() {
   fs.writeFileSync(runtimeConfigPath, JSON.stringify(runtimeConfig, null, 2), "utf8");
+  if (fabricMindDb.enabled) fabricMindDb.saveRuntimeConfig(runtimeConfig);
 }
 
 function loadStoredAssets() {
@@ -645,8 +679,8 @@ function loadStoredAssets() {
 
 function defaultUsers() {
   return [
-    { id: "u001", name: "演示用户", nickName: "演示用户", points: 128, total: 24, success: 21, avatar: "/public/home/person-default.png", avatarUrl: "/public/home/person-default.png" },
-    { id: "u002", name: "设计师用户", nickName: "设计师用户", points: 92, total: 12, success: 10, avatar: "/public/samples/models/02.jpg", avatarUrl: "/public/samples/models/02.jpg" }
+    { id: "u001", name: "演示用户", nickName: "演示用户", points: 128, total: 24, success: 21, avatar: "", avatarUrl: "" },
+    { id: "u002", name: "设计师用户", nickName: "设计师用户", points: 92, total: 12, success: 10, avatar: "", avatarUrl: "" }
   ];
 }
 
@@ -675,6 +709,7 @@ function loadStoredUsers() {
 
 function saveUsers() {
   fs.writeFileSync(userStorePath, JSON.stringify({ updatedAt: new Date().toISOString(), items: users }, null, 2), "utf8");
+  if (fabricMindDb.enabled) fabricMindDb.saveUsers(users);
 }
 
 function currentUser() {
@@ -699,12 +734,13 @@ function markUserTaskSuccess(task) {
 function saveStoredAssets() {
   const customAssets = assets.filter((item) => String(item.id).startsWith("a-"));
   fs.writeFileSync(assetStorePath, JSON.stringify({ items: customAssets }, null, 2), "utf8");
+  if (fabricMindDb.enabled) fabricMindDb.saveAssets(assets);
 }
 
 function publicUser(item) {
   const localBase = runtimeConfig.storage?.local?.baseUrl || `http://127.0.0.1:${port}`;
-  const avatarUrl = item.avatarUrl || item.avatar || "/public/home/person-default.png";
-  const fullAvatarUrl = avatarUrl.startsWith("http") ? avatarUrl : `${localBase}${avatarUrl}`;
+  const avatarUrl = item.avatarUrl || item.avatar || "";
+  const fullAvatarUrl = avatarUrl ? (avatarUrl.startsWith("http") ? avatarUrl : `${localBase}${avatarUrl}`) : "";
   return {
     ...item,
     name: item.nickName || item.name,
@@ -1661,9 +1697,17 @@ function runMockGeneration(task) {
 
   setTimeout(() => {
     if (task.status === "failed" || task.status === "success") return;
+    if (!task.personUrl) {
+      task.status = "failed";
+      task.progress = 100;
+      task.errorMessage = "缺少人物图，无法生成结果";
+      task.finishedAt = new Date().toLocaleString("zh-CN", { hour12: false });
+      saveTaskStore();
+      return;
+    }
     task.status = "success";
     task.progress = 100;
-    task.resultUrl = task.personUrl || "/public/home/person-default.png";
+    task.resultUrl = task.personUrl;
     task.finishedAt = new Date().toLocaleString("zh-CN", { hour12: false });
     markUserTaskSuccess(task);
     saveTaskStore();
@@ -1737,6 +1781,9 @@ async function runGenerationTask(task, payload) {
 }
 
 function createTask(payload, userOption) {
+  if (!payload.personUrl || !payload.garmentUrl) {
+    throw new Error("缺少人物图或服装图，无法创建生成任务");
+  }
   const id = `t-${Date.now()}`;
   const mode = payload.mode || "整套换装";
   const scope = normalizeMode(mode, payload.scope);
@@ -1752,8 +1799,8 @@ function createTask(payload, userOption) {
     status: "queued",
     progress: 12,
     points: 8,
-    personUrl: payload.personUrl || "/public/home/person-default.png",
-    garmentUrl: payload.garmentUrl || "/public/home/garment-default.png",
+    personUrl: payload.personUrl,
+    garmentUrl: payload.garmentUrl,
     resultUrl: "",
     prompt: modePrompt(mode, payload.prompt, scope),
     createdAt: new Date().toLocaleString("zh-CN", { hour12: false }),
@@ -1770,7 +1817,8 @@ function createTask(payload, userOption) {
 
 function createVideoTask(payload, userOption) {
   const sourceTask = payload.sourceTaskId ? tasks.find((item) => item.id === payload.sourceTaskId) : null;
-  const posterUrl = payload.imageUrl || sourceTask?.resultUrl || "/public/home/person-default.png";
+  const posterUrl = payload.imageUrl || sourceTask?.resultUrl || "";
+  if (!posterUrl) throw new Error("缺少视频首帧图，无法创建视频任务");
   const id = `v-${Date.now()}`;
   const provider = payload.provider || runtimeConfig.video.activeProvider || "mock";
   const user = userOption || currentUser();
@@ -1917,7 +1965,7 @@ function serveAdminLogin(res) {
   </style>
 </head>
 <body>
-  <div class="stage"><div class="panel-img"><img src="/public/home/person-default.png" alt=""></div><div></div></div>
+  <div class="stage"><div class="panel-img missing-image">缺少登录预览图</div><div></div></div>
   <div class="grain"></div>
   <form class="login" id="loginForm">
     <div class="badge">ADMIN SECURE GATE</div>
@@ -2047,7 +2095,7 @@ const server = http.createServer(async (req, res) => {
         user.nickName = nickName;
         user.name = nickName;
       }
-      if (avatarUrl && (!user.avatarUrl || user.avatarUrl.includes("person-default"))) {
+      if (avatarUrl && !user.avatarUrl) {
         user.avatarUrl = avatarUrl;
         user.avatar = avatarUrl;
       }
@@ -2061,7 +2109,7 @@ const server = http.createServer(async (req, res) => {
         miniOpenid: openid || "",
         webOpenid: "",
         nickName: nickName || "微信用户",
-        avatarUrl: avatarUrl || "/public/home/person-default.png",
+        avatarUrl: avatarUrl || "",
         phone: "",
         points: 128,
         total: 0,
@@ -2166,7 +2214,7 @@ const server = http.createServer(async (req, res) => {
       if (openid) user.miniOpenid = openid;
       if (unionid) user.unionid = unionid;
       if (nickName && (!user.nickName || user.nickName === "微信用户")) { user.nickName = nickName; user.name = nickName; }
-      if (avatarUrl && (!user.avatarUrl || user.avatarUrl.includes("person-default"))) { user.avatarUrl = avatarUrl; user.avatar = avatarUrl; }
+      if (avatarUrl && !user.avatarUrl) { user.avatarUrl = avatarUrl; user.avatar = avatarUrl; }
       user.lastLoginAt = new Date().toLocaleString("zh-CN", { hour12: false });
       user.updatedAt = new Date().toLocaleString("zh-CN", { hour12: false });
       saveUsers();
@@ -2177,7 +2225,7 @@ const server = http.createServer(async (req, res) => {
         miniOpenid: openid || "",
         webOpenid: "",
         nickName: nickName || "微信用户",
-        avatarUrl: avatarUrl || "/public/home/person-default.png",
+        avatarUrl: avatarUrl || "",
         phone: "",
         points: 128,
         total: 0,
@@ -2238,7 +2286,7 @@ const server = http.createServer(async (req, res) => {
       openid = `mock-web-openid-${Date.now()}`;
       unionid = `mock-unionid-user`; 
       nickname = "测试微信网页用户";
-      headimgurl = "/public/home/person-default.png";
+      headimgurl = "";
     } else {
       try {
         const tokenRes = await fetch(`https://api.weixin.qq.com/sns/oauth2/access_token?appid=${webAppId}&secret=${webSecret}&code=${code}&grant_type=authorization_code`);
@@ -2277,7 +2325,7 @@ const server = http.createServer(async (req, res) => {
         user.nickName = nickname;
         user.name = nickname;
       }
-      if (headimgurl && (!user.avatarUrl || user.avatarUrl.includes("person-default"))) {
+      if (headimgurl && !user.avatarUrl) {
         user.avatarUrl = headimgurl;
         user.avatar = headimgurl;
       }
@@ -2291,7 +2339,7 @@ const server = http.createServer(async (req, res) => {
         miniOpenid: "",
         webOpenid: openid || "",
         nickName: nickname || "微信网页用户",
-        avatarUrl: headimgurl || "/public/home/person-default.png",
+        avatarUrl: headimgurl || "",
         phone: "",
         points: 128,
         total: 0,
@@ -2356,11 +2404,15 @@ const server = http.createServer(async (req, res) => {
     if (!style || !fabric) {
       return json(res, { message: "未找到对应的款式或面料" }, 400);
     }
+    const previewUrl = fabric.previewUrls?.[styleId] || "";
+    if (!previewUrl) {
+      return json(res, { message: "缺少该款式和面料的预览图，请先在数据库中补充 OSS 地址" }, 404);
+    }
     const finalPrice = style.basePrice + fabric.priceMarkup;
     return json(res, {
       styleId,
       fabricId,
-      previewUrl: `/resources/kuanshi/${fabricId}_${styleId}.png`,
+      previewUrl,
       price: finalPrice
     });
   }
@@ -2501,7 +2553,7 @@ const server = http.createServer(async (req, res) => {
   if (pathname === "/api/admin/shop/styles" && req.method === "POST") {
     const body = await readBody(req);
     const { id, name, nameKey, image, basePrice } = body;
-    if (!id || !name || !basePrice) {
+    if (!id || !name || !basePrice || !image) {
       return json(res, { message: "参数不完整" }, 400);
     }
     if (shopProducts.styles.some(s => s.id === id)) {
@@ -2511,7 +2563,7 @@ const server = http.createServer(async (req, res) => {
       id,
       name,
       nameKey: nameKey || `style.${id}.name`,
-      image: image || "/resources/style/tx.jpg",
+      image,
       basePrice: Number(basePrice)
     };
     shopProducts.styles.push(style);
@@ -2653,6 +2705,7 @@ const server = http.createServer(async (req, res) => {
   }
   if (pathname === "/api/admin/assets" && req.method === "POST") {
     const body = await readBody(req);
+    if (!body.url && !body.ossUrl) return json(res, { message: "缺少素材图片 URL" }, 400);
     const asset = {
       id: `a-${Date.now()}`,
       name: body.name || "新上传素材",
@@ -2660,7 +2713,7 @@ const server = http.createServer(async (req, res) => {
       color: body.color || "未标注",
       style: body.style || "管理员上传",
       status: body.status || "上架",
-      url: body.url || body.ossUrl || "/public/home/garment-default.png",
+      url: body.url || body.ossUrl,
       ossUrl: body.ossUrl || body.url || "",
       createdAt: new Date().toLocaleString("zh-CN", { hour12: false })
     };
@@ -2728,12 +2781,15 @@ const server = http.createServer(async (req, res) => {
   }
   if (pathname === "/api/admin/model-test" && req.method === "POST") {
     const body = await readBody(req);
+    if (!body.personUrl || !body.garmentUrl) {
+      return json(res, { message: "缺少模型测试人物图或服装图" }, 400);
+    }
     const task = createTask({
       provider: body.provider || runtimeConfig.activeProvider,
       mode: body.mode || "模型测试",
       prompt: body.prompt || "将服装图中的衣服自然地换到人物图中的人物身上，保持人物脸部、姿势、体型、背景和光照尽量不变。",
-      personUrl: body.personUrl || "/public/home/person-default.png",
-      garmentUrl: body.garmentUrl || "/public/home/garment-default.png",
+      personUrl: body.personUrl,
+      garmentUrl: body.garmentUrl,
       fallbackToMock: body.fallbackToMock !== false,
       transient: Boolean(body.transient)
     });
@@ -2789,8 +2845,12 @@ const server = http.createServer(async (req, res) => {
     const body = await readBody(req);
     const user = currentUserFromRequest(req) || (adminFromRequest(req) ? currentUser() : null);
     if (!user) return json(res, { message: "请先微信登录" }, 401);
-    const videoTask = createVideoTask(body, user);
-    return json(res, { videoTaskId: videoTask.id, videoTask });
+    try {
+      const videoTask = createVideoTask(body, user);
+      return json(res, { videoTaskId: videoTask.id, videoTask });
+    } catch (error) {
+      return json(res, { message: error.message }, 400);
+    }
   }
 
   if (pathname === "/api/uploads/temp" && req.method === "POST") {
@@ -2839,23 +2899,23 @@ const server = http.createServer(async (req, res) => {
         const ext = extFromName || extFromType;
         const prepared = compressImageBuffer(file.buffer, file.filename || `upload${ext}`);
         const safeName = `${Date.now()}-${prepared.filename.replace(/[^\w.-]/g, "_") || `upload${ext}`}`;
-        const dir = path.join(root, "public", "uploads");
-        fs.mkdirSync(dir, { recursive: true });
-        fs.writeFileSync(path.join(dir, safeName), prepared.buffer);
-        const localUrl = `/public/uploads/${safeName}`;
 
         if (canUseOss()) {
           const ossUrl = await uploadBufferToOss(prepared.buffer, `fabricmind/uploads/${safeName}`, prepared.contentType || file.contentType);
           return json(res, {
             id: `upload-${Date.now()}`,
             url: ossUrl,
-            localUrl,
+            localUrl: "",
             ossUrl,
             ossKey: new URL(ossUrl).pathname.replace(/^\/+/, ""),
             storage: "oss"
           });
         }
 
+        const dir = path.join(root, "public", "uploads");
+        fs.mkdirSync(dir, { recursive: true });
+        fs.writeFileSync(path.join(dir, safeName), prepared.buffer);
+        const localUrl = `/public/uploads/${safeName}`;
         return json(res, {
           id: `upload-${Date.now()}`,
           url: localUrl,
@@ -2878,23 +2938,23 @@ const server = http.createServer(async (req, res) => {
         const prepared = compressImageBuffer(rawBuffer, body.filename || `upload${ext}`);
         const buffer = prepared.buffer;
         const finalContentType = prepared.contentType || contentType;
-        const dir = path.join(root, "public", "uploads");
-        fs.mkdirSync(dir, { recursive: true });
-        fs.writeFileSync(path.join(dir, safeName), buffer);
-        const localUrl = `/public/uploads/${safeName}`;
 
         if (canUseOss()) {
           const ossUrl = await uploadBufferToOss(buffer, `fabricmind/uploads/${safeName}`, finalContentType);
           return json(res, {
             id: `upload-${Date.now()}`,
             url: ossUrl,
-            localUrl,
+            localUrl: "",
             ossUrl,
             ossKey: new URL(ossUrl).pathname.replace(/^\/+/, ""),
             storage: "oss"
           });
         }
 
+        const dir = path.join(root, "public", "uploads");
+        fs.mkdirSync(dir, { recursive: true });
+        fs.writeFileSync(path.join(dir, safeName), buffer);
+        const localUrl = `/public/uploads/${safeName}`;
         return json(res, {
           id: `upload-${Date.now()}`,
           url: localUrl,
@@ -2907,7 +2967,8 @@ const server = http.createServer(async (req, res) => {
       }
     }
 
-    const sourceUrl = body.url || "/public/home/person-default.png";
+    if (!body.url) return json(res, { message: "缺少要上传的图片 URL" }, 400);
+    const sourceUrl = body.url;
     if (canUseOss() && !sourceUrl.startsWith("http")) {
       try {
         const ossUrl = await uploadLocalPublicFileToOss(sourceUrl, "fabricmind/uploads");
@@ -2934,8 +2995,12 @@ const server = http.createServer(async (req, res) => {
     const body = await readBody(req);
     const user = currentUserFromRequest(req);
     if (!user) return json(res, { message: "请先微信登录" }, 401);
-    const task = createTask(body, user);
-    return json(res, { taskId: task.id, task });
+    try {
+      const task = createTask(body, user);
+      return json(res, { taskId: task.id, task });
+    } catch (error) {
+      return json(res, { message: error.message }, 400);
+    }
   }
 
   return serveFile(req, res, pathname);

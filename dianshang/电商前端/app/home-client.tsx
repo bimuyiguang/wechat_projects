@@ -18,8 +18,9 @@ import QRCode from "qrcode"
 interface GarmentStyle {
   id: string
   nameKey: string
-  image: string // Icon image path e.g. /resources/style/tx.jpg
+  image: string // Icon image path or OSS URL
   basePrice: number // Base price for this style
+  previewUrls?: Record<string, string>
 }
 
 interface FabricSpec {
@@ -32,13 +33,35 @@ interface FabricSpec {
   hex: string
   rgb: string
   priceMarkup: number // Price increment markup for premium fabrics
+  image?: string
+  previewUrls?: Record<string, string>
 }
 
+const ossBase = "https://sky-takeout-wet.oss-cn-beijing.aliyuncs.com/fabricmind/public/shop"
+const styleImage = (styleId: string) => `${ossBase}/styles/style/${styleId}/image-${styleId}.jpg`
+const fabricImage = (fabricId: string) => `${ossBase}/fabrics/fabric/${fabricId}/image-${fabricId}.jpg`
+const previewImage = (fabricId: string, styleId: string) =>
+  `${ossBase}/previews/preview/${fabricId}_${styleId}/image_url-${fabricId}_${styleId}.png`
+const previewUrlsFor = (fabricId: string) => ({
+  tx: previewImage(fabricId, "tx"),
+  dx: previewImage(fabricId, "dx"),
+  dk: previewImage(fabricId, "dk"),
+  cx: previewImage(fabricId, "cx"),
+})
+const normalizeStyles = (items: GarmentStyle[]) =>
+  items.map((style) => ({ ...style, image: style.image?.startsWith("http") ? style.image : styleImage(style.id) }))
+const normalizeFabrics = (items: FabricSpec[]) =>
+  items.map((fabric) => ({
+    ...fabric,
+    image: fabric.image?.startsWith("http") ? fabric.image : fabricImage(fabric.id),
+    previewUrls: { ...previewUrlsFor(fabric.id), ...(fabric.previewUrls || {}) },
+  }))
+
 const stylesList: GarmentStyle[] = [
-  { id: "tx", nameKey: "style.tx.name", image: "/resources/style/tx.jpg", basePrice: 199 },
-  { id: "dk", nameKey: "style.dk.name", image: "/resources/style/dk.jpg", basePrice: 179 },
-  { id: "dx", nameKey: "style.dx.name", image: "/resources/style/dx.jpg", basePrice: 499 },
-  { id: "cx", nameKey: "style.cx.name", image: "/resources/style/cx.jpg", basePrice: 299 },
+  { id: "tx", nameKey: "style.tx.name", image: styleImage("tx"), basePrice: 199 },
+  { id: "dk", nameKey: "style.dk.name", image: styleImage("dk"), basePrice: 179 },
+  { id: "dx", nameKey: "style.dx.name", image: styleImage("dx"), basePrice: 499 },
+  { id: "cx", nameKey: "style.cx.name", image: styleImage("cx"), basePrice: 299 },
 ]
 
 const fabricsList: FabricSpec[] = [
@@ -59,9 +82,15 @@ const fabricsList: FabricSpec[] = [
   { id: "fabric15", nameKey: "fabric.fabric15.name", composition: "95% 高弹天丝莫代尔, 5% 莱卡", weight: "190克/平方米", width: "152厘米", pantone: "13-0630 TCX (柠檬黄)", hex: "#FFF700", rgb: "255, 247, 0", priceMarkup: 20 },
   { id: "fabric16", nameKey: "fabric.fabric16.name", composition: "100% 天然竹纤维低碳环保丝", weight: "170克/平方米", width: "148厘米", pantone: "16-5127 TCX (松石绿)", hex: "#30D5C8", rgb: "48, 213, 200", priceMarkup: 30 },
   { id: "fabric17", nameKey: "fabric.fabric17.name", composition: "100% 澳大利亚美利奴超细精纺羊毛", weight: "280克/平方米", width: "148厘米", pantone: "18-1440 TCX (焦糖红)", hex: "#C68E17", rgb: "198, 142, 23", priceMarkup: 140 },
-]
+].map((fabric) => ({
+  ...fabric,
+  image: fabric.image || fabricImage(fabric.id),
+  previewUrls: fabric.previewUrls || previewUrlsFor(fabric.id),
+}))
 
 const sizesList = ["XS", "S", "M", "L", "XL", "XXL", "3XL", "4XL", "5XL"]
+const missingPreviewImage =
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='600' viewBox='0 0 600 600'%3E%3Crect width='600' height='600' fill='%23f4f4f5'/%3E%3Ctext x='300' y='290' text-anchor='middle' font-size='28' font-family='Arial' fill='%2371717a'%3EMissing OSS image%3C/text%3E%3Ctext x='300' y='330' text-anchor='middle' font-size='18' font-family='Arial' fill='%23a1a1aa'%3EPlease update database preview URL%3C/text%3E%3C/svg%3E"
 
 // Detailed Mapped Size Measurement Specs (for XS - 5XL)
 const sizesSpecification = [
@@ -180,8 +209,9 @@ export default function HomePage() {
   const finalPrice = selectedStyle.basePrice + selectedFabric.priceMarkup
   const oldPrice = Math.round(finalPrice * 1.25)
 
-  // Combined trial rendering path: /resources/kuanshi/fabricX_styleY.png
-  const renderingImagePath = `/resources/kuanshi/${selectedFabric.id}_${selectedStyle.id}.png`
+  const renderingImagePath = selectedFabric.previewUrls?.[selectedStyle.id] || ""
+  const showcaseImage = (fabricId: string, styleId: string) =>
+    fabrics.find((fabric) => fabric.id === fabricId)?.previewUrls?.[styleId] || missingPreviewImage
   const checkoutUrl = `/checkout?style=${selectedStyle.id}&fabric=${selectedFabric.id}&size=${selectedSize}`
 
   const stopQrPolling = () => {
@@ -349,13 +379,13 @@ export default function HomePage() {
     async function loadShopData() {
       try {
         const stylesData = await fetchFromApi("/api/shop/styles");
-        setStyles(stylesData);
+        setStyles(normalizeStyles(stylesData));
       } catch (e) {
         console.warn("无法从后端加载款式，使用内置数据", e);
       }
       try {
         const fabricsData = await fetchFromApi("/api/shop/fabrics");
-        setFabrics(fabricsData);
+        setFabrics(normalizeFabrics(fabricsData));
       } catch (e) {
         console.warn("无法从后端加载面料，使用内置数据", e);
       }
@@ -396,18 +426,28 @@ export default function HomePage() {
               <div className="relative group w-full max-w-md bg-card rounded-2xl overflow-hidden shadow-2xl transition-all duration-500 hover:shadow-primary/10 border border-border">
                 {/* 3D Rendered Combined Image */}
                 <div className="relative w-full aspect-[4/5] bg-muted overflow-hidden">
-                  <img
-                    src={renderingImagePath}
-                    alt={`${t(selectedStyle.nameKey)} - ${t(selectedFabric.nameKey)}`}
-                    className="w-full h-full object-cover transition-transform duration-700 hover:scale-102"
-                  />
+                  {renderingImagePath ? (
+                    <img
+                      src={renderingImagePath}
+                      alt={`${t(selectedStyle.nameKey)} - ${t(selectedFabric.nameKey)}`}
+                      className="w-full h-full object-cover transition-transform duration-700 hover:scale-102"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-muted text-sm font-semibold text-muted-foreground">
+                      缺少 OSS 预览图
+                    </div>
+                  )}
                   <Badge className="absolute top-4 left-4 bg-primary text-primary-foreground backdrop-blur-md border border-white/10 text-xs px-3 py-1 font-sans uppercase tracking-widest shadow-md">
                     成衣试衣效果 / 数字化效果呈现
                   </Badge>
                   
                   {/* Style Preview Icon (Floating Overlay) */}
                   <div className="absolute bottom-4 right-4 w-16 h-16 rounded-xl overflow-hidden border border-white/20 shadow-lg bg-black/40 backdrop-blur-md flex items-center justify-center p-0.5">
-                    <img src={selectedStyle.image} alt="版型" className="w-full h-full object-cover rounded-lg" />
+                    {selectedStyle.image ? (
+                      <img src={selectedStyle.image} alt="版型" className="w-full h-full object-cover rounded-lg" />
+                    ) : (
+                      <span className="text-[10px] text-white/80">缺图</span>
+                    )}
                   </div>
                 </div>
 
@@ -487,7 +527,11 @@ export default function HomePage() {
                         }`}
                       >
                         <div className="w-12 h-12 rounded-lg overflow-hidden border border-border">
-                          <img src={style.image} alt={t(style.nameKey)} className="w-full h-full object-cover" />
+                          {style.image ? (
+                            <img src={style.image} alt={t(style.nameKey)} className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-muted text-[10px] text-muted-foreground">缺图</div>
+                          )}
                         </div>
                         <span className="text-xs font-bold text-center tracking-tight text-foreground truncate max-w-full">
                           {t(style.nameKey).replace("极简", "").replace("都市", "")}
@@ -676,7 +720,7 @@ export default function HomePage() {
             <div className="lg:col-span-6 grid grid-cols-2 gap-4">
               <div className="relative group rounded-xl overflow-hidden shadow-md aspect-square bg-card border border-border">
                 <img
-                  src="/resources/kuanshi/fabric1_tx.png"
+                  src={showcaseImage("fabric1", "tx")}
                   alt="极简百搭T恤"
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                 />
@@ -687,7 +731,7 @@ export default function HomePage() {
               </div>
               <div className="relative group rounded-xl overflow-hidden shadow-md aspect-square bg-card border border-border">
                 <img
-                  src="/resources/kuanshi/fabric2_cx.png"
+                  src={showcaseImage("fabric2", "cx")}
                   alt="休闲长袖衬衫"
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                 />
@@ -698,7 +742,7 @@ export default function HomePage() {
               </div>
               <div className="relative group rounded-xl overflow-hidden shadow-md aspect-square bg-card border border-border">
                 <img
-                  src="/resources/kuanshi/fabric3_dk.png"
+                  src={showcaseImage("fabric3", "dk")}
                   alt="休闲轻便短裤"
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                 />
@@ -709,7 +753,7 @@ export default function HomePage() {
               </div>
               <div className="relative group rounded-xl overflow-hidden shadow-md aspect-square bg-card border border-border">
                 <img
-                  src="/resources/kuanshi/fabric4_dx.png"
+                  src={showcaseImage("fabric4", "dx")}
                   alt="时尚风衣大衣"
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                 />

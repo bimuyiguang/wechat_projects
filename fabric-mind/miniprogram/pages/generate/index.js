@@ -17,9 +17,6 @@ const modeScopes = {
 
 const POINTS_KEY = "fabricMindPoints";
 const CHECKIN_KEY = "fabricMindLastCheckInDate";
-const DEFAULT_PERSON_PREVIEW = "/assets/home-person.jpg";
-const DEFAULT_GARMENT_PREVIEW = "/assets/home-garment.jpg";
-
 function todayKey() {
   const now = new Date();
   const month = String(now.getMonth() + 1).padStart(2, "0");
@@ -35,12 +32,12 @@ Page({
     mode: "整套换装",
     scope: "full",
     prompt: modePrompts["整套换装"],
-    personUrl: DEFAULT_PERSON_PREVIEW,
-    garmentUrl: DEFAULT_GARMENT_PREVIEW,
-    personName: "默认人物预览",
-    garmentName: "默认服装预览",
-    personApiUrl: "/public/home/person-default.png",
-    garmentApiUrl: "/public/home/garment-default.png",
+    personUrl: "",
+    garmentUrl: "",
+    personName: "请上传或选择人物照片",
+    garmentName: "请上传或选择服装素材",
+    personApiUrl: "",
+    garmentApiUrl: "",
     uploadingPerson: false,
     uploadingGarment: false
   },
@@ -199,7 +196,7 @@ Page({
           header.Authorization = `Bearer ${app.globalData.token}`;
         }
         wx.request({
-          url: `${app.globalData.baseUrl}/api/uploads/temp`,
+          url: `${app.globalData.baseUrl}/api/uploads`,
           method: "POST",
           header,
           data: {
@@ -228,6 +225,10 @@ Page({
   },
 
   async startGenerate() {
+    if (!this.data.personApiUrl || !this.data.garmentApiUrl) {
+      wx.showToast({ title: "请先上传人物图和服装图", icon: "none" });
+      return;
+    }
     wx.showLoading({ title: "提交中" });
     try {
       const resp = await request("/api/generation/try-on", "POST", {

@@ -21,6 +21,7 @@ interface GarmentStyle {
   nameKey: string
   image: string
   basePrice: number
+  previewUrls?: Record<string, string>
 }
 
 interface FabricSpec {
@@ -33,13 +34,35 @@ interface FabricSpec {
   hex: string
   rgb: string
   priceMarkup: number
+  image?: string
+  previewUrls?: Record<string, string>
 }
 
+const ossBase = "https://sky-takeout-wet.oss-cn-beijing.aliyuncs.com/fabricmind/public/shop"
+const styleImage = (styleId: string) => `${ossBase}/styles/style/${styleId}/image-${styleId}.jpg`
+const fabricImage = (fabricId: string) => `${ossBase}/fabrics/fabric/${fabricId}/image-${fabricId}.jpg`
+const previewImage = (fabricId: string, styleId: string) =>
+  `${ossBase}/previews/preview/${fabricId}_${styleId}/image_url-${fabricId}_${styleId}.png`
+const previewUrlsFor = (fabricId: string) => ({
+  tx: previewImage(fabricId, "tx"),
+  dx: previewImage(fabricId, "dx"),
+  dk: previewImage(fabricId, "dk"),
+  cx: previewImage(fabricId, "cx"),
+})
+const normalizeStyles = (items: GarmentStyle[]) =>
+  items.map((style) => ({ ...style, image: style.image?.startsWith("http") ? style.image : styleImage(style.id) }))
+const normalizeFabrics = (items: FabricSpec[]) =>
+  items.map((fabric) => ({
+    ...fabric,
+    image: fabric.image?.startsWith("http") ? fabric.image : fabricImage(fabric.id),
+    previewUrls: { ...previewUrlsFor(fabric.id), ...(fabric.previewUrls || {}) },
+  }))
+
 const stylesList: GarmentStyle[] = [
-  { id: "tx", nameKey: "style.tx.name", image: "/resources/style/tx.jpg", basePrice: 199 },
-  { id: "dk", nameKey: "style.dk.name", image: "/resources/style/dk.jpg", basePrice: 179 },
-  { id: "dx", nameKey: "style.dx.name", image: "/resources/style/dx.jpg", basePrice: 499 },
-  { id: "cx", nameKey: "style.cx.name", image: "/resources/style/cx.jpg", basePrice: 299 },
+  { id: "tx", nameKey: "style.tx.name", image: styleImage("tx"), basePrice: 199 },
+  { id: "dk", nameKey: "style.dk.name", image: styleImage("dk"), basePrice: 179 },
+  { id: "dx", nameKey: "style.dx.name", image: styleImage("dx"), basePrice: 499 },
+  { id: "cx", nameKey: "style.cx.name", image: styleImage("cx"), basePrice: 299 },
 ]
 
 const fabricsList: FabricSpec[] = [
@@ -60,7 +83,11 @@ const fabricsList: FabricSpec[] = [
   { id: "fabric15", nameKey: "fabric.fabric15.name", composition: "95% 天丝莫代尔, 5% 莱卡", weight: "190克/平方米", width: "152厘米", pantone: "13-0630 TCX", hex: "#FFF700", rgb: "255, 247, 0", priceMarkup: 20 },
   { id: "fabric16", nameKey: "fabric.fabric16.name", composition: "100% 竹纤维低碳环保丝", weight: "170克/平方米", width: "148厘米", pantone: "16-5127 TCX", hex: "#30D5C8", rgb: "48, 213, 200", priceMarkup: 30 },
   { id: "fabric17", nameKey: "fabric.fabric17.name", composition: "100% 澳大利亚美利奴精纺羊毛", weight: "280克/平方米", width: "148厘米", pantone: "18-1440 TCX", hex: "#C68E17", rgb: "198, 142, 23", priceMarkup: 140 },
-]
+].map((fabric) => ({
+  ...fabric,
+  image: fabric.image || fabricImage(fabric.id),
+  previewUrls: fabric.previewUrls || previewUrlsFor(fabric.id),
+}))
 
 interface FormData {
   fullName: string
@@ -142,13 +169,13 @@ function CheckoutContent() {
     async function loadShopData() {
       try {
         const stylesData = await fetchFromApi("/api/shop/styles");
-        setStyles(stylesData);
+        setStyles(normalizeStyles(stylesData));
       } catch (e) {
         console.warn("无法从后端加载款式，使用内置数据", e);
       }
       try {
         const fabricsData = await fetchFromApi("/api/shop/fabrics");
-        setFabrics(fabricsData);
+        setFabrics(normalizeFabrics(fabricsData));
       } catch (e) {
         console.warn("无法从后端加载面料，使用内置数据", e);
       }
@@ -274,7 +301,7 @@ function CheckoutContent() {
   const discount = Math.round(singlePrice * 0.25) * formData.quantity
   const totalPrice = subtotal
 
-  const renderingImagePath = `/resources/kuanshi/${selectedFabric.id}_${selectedStyle.id}.png`
+  const renderingImagePath = selectedFabric.previewUrls?.[selectedStyle.id] || ""
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {}
@@ -551,7 +578,11 @@ function CheckoutContent() {
                 </h3>
                 <div className="flex gap-4 items-center">
                   <div className="w-16 h-20 bg-muted border border-border rounded-lg overflow-hidden shrink-0">
-                    <img src={renderingImagePath} alt="定制成衣" className="w-full h-full object-cover" />
+                    {renderingImagePath ? (
+                      <img src={renderingImagePath} alt="定制成衣" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-muted text-[10px] font-semibold text-muted-foreground">缺少 OSS 预览图</div>
+                    )}
                   </div>
                   <div className="space-y-1 text-xs">
                     <p className="text-sm text-foreground font-bold">{t(selectedStyle.nameKey)}</p>
@@ -613,11 +644,15 @@ function CheckoutContent() {
               <CardContent>
                 <div className="mb-6 rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4 flex items-center gap-3 shadow-sm">
                   <div className="relative w-10 h-10 rounded-full overflow-hidden border border-emerald-500/30 shrink-0">
-                    <img
-                      src={currentUser.avatarUrl || currentUser.avatar || "/resources/style/tx.jpg"}
-                      alt={currentUser.nickName || "微信用户"}
-                      className="w-full h-full object-cover"
-                    />
+                    {currentUser.avatarUrl || currentUser.avatar ? (
+                      <img
+                        src={currentUser.avatarUrl || currentUser.avatar}
+                        alt={currentUser.nickName || "微信用户"}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-muted text-[9px] text-muted-foreground">缺图</div>
+                    )}
                   </div>
                   <div className="min-w-0">
                     <p className="text-sm font-bold text-foreground flex items-center gap-1.5 flex-wrap">
@@ -764,11 +799,15 @@ function CheckoutContent() {
                 {/* Visual item configuration overlay */}
                 <div className="flex gap-4 items-center pb-4 border-b border-border">
                   <div className="w-16 h-20 rounded-lg overflow-hidden bg-muted border border-border shrink-0">
-                    <img
-                      src={renderingImagePath}
-                      alt={t(selectedStyle.nameKey)}
-                      className="w-full h-full object-cover"
-                    />
+                    {renderingImagePath ? (
+                      <img
+                        src={renderingImagePath}
+                        alt={t(selectedStyle.nameKey)}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-muted text-[10px] font-semibold text-muted-foreground">缺图</div>
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="font-bold text-sm text-foreground truncate">

@@ -21,7 +21,8 @@
       <view class="hint">{{personName}}</view>
     </view>
     <view class="preview person-preview">
-      <image src="{{personUrl}}" mode="aspectFit" />
+      <image wx:if="{{personUrl}}" src="{{personUrl}}" mode="aspectFit" />
+      <view wx:else class="missing-preview">请上传人物图</view>
     </view>
     <view class="actions">
       <button class="soft-btn" bindtap="goAssets">素材库选择</button>
@@ -35,7 +36,8 @@
       <view class="hint">{{garmentName}}</view>
     </view>
     <view class="preview garment-preview">
-      <image src="{{garmentUrl}}" mode="aspectFit" />
+      <image wx:if="{{garmentUrl}}" src="{{garmentUrl}}" mode="aspectFit" />
+      <view wx:else class="missing-preview">请上传服装图</view>
     </view>
     <view class="actions">
       <button class="soft-btn" bindtap="goAssets">素材库选择</button>

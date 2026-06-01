@@ -15,8 +15,8 @@ const state = {
   prompt: "保持脸部和背景不变，让服装自然贴合身体"
 };
 
-const personUrl = "/public/home/person-default.png";
-const garmentUrl = "/public/home/garment-default.png";
+const personUrl = "https://sky-takeout-wet.oss-cn-beijing.aliyuncs.com/fabricmind/public/avatars/user/u001/avatar-person-default.png";
+const garmentUrl = "https://sky-takeout-wet.oss-cn-beijing.aliyuncs.com/fabricmind/assets/1780316745622-T_shirt.png";
 const appRoot = document.querySelector("#app");
 
 function renderTop(title, sub = "") {

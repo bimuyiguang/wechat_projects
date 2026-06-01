@@ -38,6 +38,7 @@ next-env.d.ts
 
 # Runtime data. These are local JSON stores and may contain user/session/key data.
 fabric-mind/server/runtime-*.json
+fabric-mind/backups/
 fabric-mind/public/generated/
 fabric-mind/public/uploads/
 fabric-mind/public/videos/

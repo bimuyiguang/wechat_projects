@@ -100,11 +100,11 @@ async function api(path, options = {}) {
 }
 
 function mediaUrl(url) {
-  return url || "/public/home/person-default.png";
+  return url || "";
 }
 
 function assetDisplayUrl(asset = {}) {
-  return asset.displayUrl || asset.fullUrl || asset.ossUrl || asset.url || "/public/home/person-default.png";
+  return asset.displayUrl || asset.fullUrl || asset.ossUrl || asset.url || "";
 }
 
 function assetCopyUrl(asset = {}) {
@@ -188,7 +188,13 @@ function displayUserName(task = {}) {
 function displayUserAvatar(task = {}) {
   const user = data.users.find((item) => item.id === task.userId)
     || (task.user === "演示用户" ? primaryUser() : null);
-  return user?.fullAvatarUrl || user?.avatarUrl || task.userAvatarUrl || "/public/home/person-default.png";
+  return user?.fullAvatarUrl || user?.avatarUrl || task.userAvatarUrl || "";
+}
+
+function imageOrMissing(url, alt = "图片", className = "") {
+  const src = mediaUrl(url);
+  if (!src) return `<div class="${className} missing-image">缺图</div>`;
+  return `<img${className ? ` class="${className}"` : ""} src="${src}" alt="${alt}">`;
 }
 
 function includesQuery(parts, q = searchState.q) {
@@ -263,7 +269,7 @@ function assetGrid(items = data.assets) {
   if (!items.length) return `<p class="muted">暂无素材。</p>`;
   return `<div class="asset-grid">${items.map((asset) => `
     <article class="asset-card" data-asset-detail="${asset.id}">
-      <img src="${mediaUrl(assetDisplayUrl(asset))}" alt="${asset.name}">
+      ${imageOrMissing(assetDisplayUrl(asset), asset.name)}
       <div class="body">
         <div class="asset-title-row"><strong>${asset.name}</strong>${assetStorageLabel(asset)}</div>
         <span>${asset.type} · ${asset.color} · ${asset.style}</span>
@@ -315,7 +321,7 @@ function renderAssetDetail(asset) {
     <div class="detail-layout">
       <section class="panel">
         <h2>素材预览</h2>
-        <img class="large-preview" src="${mediaUrl(previewUrl)}" alt="${asset.name}">
+        ${imageOrMissing(previewUrl, asset.name, "large-preview")}
       </section>
       <section class="panel">
         <h2>素材信息</h2>
@@ -353,7 +359,7 @@ function renderUsers() {
           <tr>
             <td>
               <div class="user-cell">
-                <img src="${mediaUrl(user.avatarUrl || user.avatar || '/public/home/person-default.png')}" alt="${user.nickName || user.name}">
+                ${imageOrMissing(user.avatarUrl || user.avatar, user.nickName || user.name)}
                 <div><strong>${user.nickName || user.name}</strong><span>${user.id}</span></div>
               </div>
             </td>
@@ -383,7 +389,7 @@ function renderUserDetail(user) {
     
     <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 16px; margin-bottom: 16px;">
       <section class="panel user-profile-panel" style="margin-bottom: 0;">
-        <img src="${mediaUrl(user.avatarUrl || user.avatar || '/public/home/person-default.png')}" alt="${user.nickName || user.name}">
+        ${imageOrMissing(user.avatarUrl || user.avatar, user.nickName || user.name)}
         <div>
           <h2>${user.nickName || user.name}</h2>
           <p>用户 ID：${user.id}</p>
@@ -589,7 +595,7 @@ function taskTable(items = data.tasks) {
           <td><code>${task.id}</code></td>
           <td>
             <div class="user-cell small">
-              <img src="${mediaUrl(displayUserAvatar(task))}" alt="${displayUserName(task)}">
+              ${imageOrMissing(displayUserAvatar(task), displayUserName(task))}
               <div><strong>${displayUserName(task)}</strong><span>${task.userId || "legacy"}</span></div>
             </div>
           </td>
@@ -639,15 +645,15 @@ function renderTaskDetail(task) {
         <div class="image-row chain-row">
           <figure class="chain-card">
             <figcaption>人物图</figcaption>
-            <img src="${mediaUrl(task.personUrl)}" alt="人物图">
+            ${imageOrMissing(task.personUrl, "人物图")}
           </figure>
           <figure class="chain-card">
             <figcaption>服装图</figcaption>
-            <img src="${mediaUrl(task.garmentUrl)}" alt="服装图">
+            ${imageOrMissing(task.garmentUrl, "服装图")}
           </figure>
           <figure class="chain-card">
             <figcaption>生成结果</figcaption>
-            <img src="${mediaUrl(task.resultUrl || task.personUrl)}" alt="结果图">
+            ${imageOrMissing(task.resultUrl, "结果图")}
           </figure>
         </div>
       </section>
@@ -730,7 +736,7 @@ function renderVideoPreview(video) {
   }
   return `
     <div class="admin-video image-video-preview ${video.status === "success" ? "animated" : ""}">
-      <img src="${mediaUrl(video.posterUrl)}" alt="">
+      ${imageOrMissing(video.posterUrl, "视频封面")}
       <span>${video.status} · ${video.progress}% ${video.errorMessage ? "· " + video.errorMessage : ""}</span>
     </div>
     <div class="row-actions"><button class="primary" data-video-refresh="${video.id}">刷新任务</button></div>
@@ -849,7 +855,7 @@ function renderShopProducts() {
             <label><span>款式 ID *</span><input id="newStyleId" placeholder="例如: tx"></label>
             <label><span>名称 *</span><input id="newStyleName" placeholder="例如: 极简T恤"></label>
             <label><span>基础定价 *</span><input id="newStylePrice" type="number" placeholder="199"></label>
-            <label><span>图标路径</span><input id="newStyleImage" value="/resources/style/tx.jpg"></label>
+            <label><span>图标路径</span><input id="newStyleImage" value=""></label>
             <button class="primary" id="saveNewStyleBtn">提交保存</button>
           </div>
         </div>
@@ -966,7 +972,7 @@ function renderShopOrders() {
             const style = data.styles?.find(s => s.id === order.styleId) || { name: order.styleId };
             const fabric = data.fabrics?.find(f => f.id === order.fabricId) || { name: order.fabricId, hex: "#ccc" };
             const user = data.users?.find(u => u.id === order.userId);
-            const userAvatar = user?.avatarUrl || user?.avatar || "/public/home/person-default.png";
+            const userAvatar = user?.avatarUrl || user?.avatar || "";
             const userNick = user?.nickName || user?.name || "微信用户";
             
             let statusLabelClass = "";
@@ -989,7 +995,7 @@ function renderShopOrders() {
                 <td><code>${order.id}</code></td>
                 <td>
                   <div class="user-cell small" style="display: flex; align-items: center; gap: 8px;">
-                    <img src="${mediaUrl(userAvatar)}" alt="${userNick}" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 1px solid var(--line);">
+                    ${imageOrMissing(userAvatar, userNick)}
                     <div>
                       <strong>${userNick}</strong>
                       <span class="block muted" style="font-size: 10px;">${order.userId || "u001"}</span>
@@ -1179,7 +1185,7 @@ function renderModelConfig() {
 }
 
 function fabricImageSrc(base64, type = "png") {
-  return base64 ? `data:image/${type};base64,${base64}` : "/public/home/garment-default.png";
+  return base64 ? `data:image/${type};base64,${base64}` : "";
 }
 
 function dataUrlPayload(value = "") {

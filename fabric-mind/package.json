@@ -5,7 +5,14 @@
   "type": "module",
   "scripts": {
     "dev": "node server/index.js",
-    "start": "node server/index.js"
+    "start": "node server/index.js",
+    "db:migrate": "node scripts/migrate-json-to-mysql.mjs",
+    "oss:migrate-media": "node scripts/migrate-media-to-oss.mjs",
+    "db:backup": "node scripts/backup-mysql.mjs",
+    "db:drop-business-data": "node scripts/drop-business-data-columns.mjs",
+    "db:split-runtime-config": "node scripts/split-runtime-config.mjs"
+  },
+  "dependencies": {
+    "mysql2": "^3.15.3"
   }
 }
-
